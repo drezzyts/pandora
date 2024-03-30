@@ -1,2 +1,3 @@
 # pandora
-Simple parser generator
+
+Hybrid discord.js commands framework

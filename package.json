@@ -1,7 +1,7 @@
 {
   "name": "pandora",
   "version": "0.0.1",
-  "description": "Simple parser generator",
+  "description": "Hybrid discord.js commands framework",
   "main": "dist/index.js",
   "scripts": {
     "test": "tsx src/index.spec.ts",
@@ -9,12 +9,21 @@
     "dev": "tsx src/index.ts",
     "dev:watch": "tsx watch /index.ts"
   },
-  "keywords": ["parser", "generator"],
+  "keywords": [
+    "hybrid",
+    "slash-commands",
+    "discord.js",
+    "commands",
+    "discord-framework"
+  ],
   "author": "drezzyts",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.11.30",
     "tsx": "^4.7.1",
     "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1"
   }
 }
