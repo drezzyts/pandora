@@ -4,31 +4,37 @@ import { CommandUtils } from "../structs/Utils";
 import { CommandArguments } from "../structs/Arguments";
 import { EntityType } from "./arguments";
 
-export interface CommandConfig<T> {
+
+export interface CommandOption {
+  name: string,
+  type: EntityType
+}
+
+export interface CommandConfig<T extends CommandOption[]> {
   name: string;
   runner: CommandRunner<CommandConfig<T>["options"]>;
-  options: T[];
+  options: T;
 }
 
-export interface InteractionCommandContext {
+export interface InteractionCommandContext<T extends CommandOption[]> {
   interaction: ChatInputCommandInteraction;
-  command: Command<unknown>;
+  command: Command<T>;
 }
 
-export interface PrefixedCommandContext {
+export interface PrefixedCommandContext<T extends CommandOption[]> {
   message: Message<true>;
   prefix: string;
-  command: Command<unknown>;
+  command: Command<T>;
 }
 
-export type CommandContext = InteractionCommandContext | PrefixedCommandContext;
+export type CommandContext<T extends CommandOption[]> = InteractionCommandContext<T> | PrefixedCommandContext<T>;
 
-export interface CommandExecutionData<T> {
-  ctx: CommandContext;
+export interface CommandExecutionData<T extends CommandOption[]> {
+  ctx: CommandContext<T>;
   args: CommandArguments<T>;
-  utils: CommandUtils;
+  utils: CommandUtils<T>;
 }
 
-export type CommandRunner<T> = (
+export type CommandRunner<T extends CommandOption[]> = (
   data: CommandExecutionData<T>
 ) => Promise<any> | any;

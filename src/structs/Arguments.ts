@@ -1,6 +1,7 @@
 import { Channel, Client, Role, User } from "discord.js";
 import {
   CommandContext,
+  CommandOption,
   PrefixedCommandContext,
 } from "../types/command";
 import {
@@ -15,7 +16,7 @@ import {
 } from "../types/arguments";
 import { CommandUtils } from "./Utils";
 
-export interface CommandArguments<Options> {
+export interface CommandArguments<Options extends CommandOption[]> {
   getUser(
     flags: ArgumentFlags<UserExpectType, Options, EntityType.User>
   ): User | null;
@@ -23,19 +24,19 @@ export interface CommandArguments<Options> {
     flags: ArgumentFlags<ChannelExpectType, Options, EntityType.Channel>
   ): Channel | null;
   getRole(
-    flags: ArgumentFlags<RoleExpectType, Options, EntityType.Channel>
+    flags: ArgumentFlags<RoleExpectType, Options, EntityType.Role>
   ): Role | null;
 }
 
-export class Arguments<Options> implements CommandArguments<Options> {
+export class Arguments<Options extends CommandOption[]> implements CommandArguments<Options> {
   public constructor(
-    private context: CommandContext,
-    private utils: CommandUtils,
+    private context: CommandContext<Options>,
+    private utils: CommandUtils<Options>,
     private client: Client,
     public options: Options
   ) {}
 
-  private parseArguments(context: PrefixedCommandContext) {
+  private parseArguments(context: PrefixedCommandContext<Options>) {
     return context.message.content
       .slice(context.prefix.length + context.command.name.length)
       .trim()

@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, Client, Message } from "discord.js";
 import {
   CommandConfig,
+  CommandOption,
   CommandRunner,
   InteractionCommandContext,
   PrefixedCommandContext,
@@ -8,10 +9,10 @@ import {
 import { Arguments } from "./Arguments";
 import { Utils } from "./Utils";
 
-export class Command<T> implements CommandConfig<T> {
+export class Command<T extends CommandOption[]> implements CommandConfig<T> {
   declare name: string;
   declare runner: CommandRunner<Command<T>["options"]>;
-  declare options: T[];
+  declare options: T;
 
   public constructor(config: CommandConfig<T>) {
     Object.assign(this, config);
@@ -21,7 +22,7 @@ export class Command<T> implements CommandConfig<T> {
     interaction: ChatInputCommandInteraction,
     client: Client
   ) {
-    const ctx: InteractionCommandContext = {
+    const ctx: InteractionCommandContext<T> = {
       interaction,
       command: this,
     };
@@ -39,7 +40,7 @@ export class Command<T> implements CommandConfig<T> {
     prefix: string,
     client: Client
   ) {
-    const ctx: PrefixedCommandContext = {
+    const ctx: PrefixedCommandContext<T> = {
       message,
       prefix,
       command: this,

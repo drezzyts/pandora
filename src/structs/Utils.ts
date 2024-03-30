@@ -1,25 +1,21 @@
 import { InteractionResponse, Message } from "discord.js";
-import { CommandContext, InteractionCommandContext, PrefixedCommandContext } from "../types/command";
+import { CommandContext, CommandOption, InteractionCommandContext, PrefixedCommandContext } from "../types/command";
 
-export interface CommandUtils {
-  isInteractionContext(context: CommandContext): context is InteractionCommandContext;
-  isPrefixedContext(context: CommandContext): context is PrefixedCommandContext;
+export interface CommandUtils<T extends CommandOption[]> {
+  isInteractionContext(context: CommandContext<T>): context is InteractionCommandContext<T>;
+  isPrefixedContext(context: CommandContext<T>): context is PrefixedCommandContext<T>;
   reply(content: string): Promise<InteractionResponse<boolean>> | Promise<Message<boolean>>;
 }
 
-export class Utils implements CommandUtils {
-  public constructor(private context: CommandContext) {}
+export class Utils<T extends CommandOption[]> implements CommandUtils<T> {
+  public constructor(private context: CommandContext<T>) {}
 
-  public isInteractionContext(context: CommandContext): context is InteractionCommandContext {
-    if ('interaction' in context) 
-      return true;
-    return false;
+  public isInteractionContext(context: CommandContext<T>): context is InteractionCommandContext<T> {
+    return 'interaction' in context;
   }
 
-  public isPrefixedContext(context: CommandContext): context is PrefixedCommandContext {
-    if ('message' in context) 
-      return true;
-    return false;
+  public isPrefixedContext(context: CommandContext<T>): context is PrefixedCommandContext<T> {
+    return 'message' in context;
   }
 
   public reply(content: string) {
