@@ -45,7 +45,7 @@ export class Arguments<Options extends CommandOption[]>
       .split(/ +/g);
   }
 
-  private parseFilter<T extends ExpectType, U extends EntityType>(
+  private validateEntity<T extends ExpectType, U extends EntityType>(
     value: GetDiscordEntity<U>,
     flags: ArgumentFlags<T, Options, U>
   ): GetDiscordEntity<U> | null {
@@ -79,17 +79,17 @@ export class Arguments<Options extends CommandOption[]>
 
     if (this.isExpectedType(UserExpectType.Mention, flags)) {
       const user = this.getEntityByMention(EntityType.User, flags);
-      if (user) return this.parseFilter(user, flags) || null;
+      if (user) return this.validateEntity(user, flags) || null;
     }
 
     if (this.isExpectedType(UserExpectType.Id, flags)) {
       const user = this.getEntityById(EntityType.User, args, flags);
-      if (user) return this.parseFilter(user, flags) || null;
+      if (user) return this.validateEntity(user, flags) || null;
     }
 
     if (this.isExpectedType(UserExpectType.Username, flags)) {
       const user = this.getEntityByName(EntityType.User, args, flags);
-      if (user) return this.parseFilter(user, flags) || null;
+      if (user) return this.validateEntity(user, flags) || null;
     }
 
     return null;
@@ -114,17 +114,17 @@ export class Arguments<Options extends CommandOption[]>
 
     if (this.isExpectedType(ChannelExpectType.Mention, flags)) {
       const channel = this.getEntityByMention(EntityType.Channel, flags);
-      if (channel) return this.parseFilter(channel, flags) || null;;
+      if (channel) return this.validateEntity(channel, flags) || null;;
     }
 
     if (this.isExpectedType(ChannelExpectType.Id, flags)) {
       const channel = this.getEntityById(EntityType.Channel, args, flags);
-      if (channel) return this.parseFilter(channel, flags) || null;;
+      if (channel) return this.validateEntity(channel, flags) || null;;
     }
 
     if (this.isExpectedType(ChannelExpectType.Name, flags)) {
       const channel = this.getEntityByName(EntityType.Channel, args, flags);
-      if (channel) return this.parseFilter(channel, flags) || null;;
+      if (channel) return this.validateEntity(channel, flags) || null;;
     }
 
     return null;
@@ -149,17 +149,17 @@ export class Arguments<Options extends CommandOption[]>
 
     if (this.isExpectedType(RoleExpectType.Mention, flags)) {
       const role = this.getEntityByMention(EntityType.Role, flags);
-      if (role) return this.parseFilter(role, flags) || null;;
+      if (role) return this.validateEntity(role, flags) || null;;
     }
 
     if (this.isExpectedType(RoleExpectType.Id, flags)) {
       const role = this.getEntityById(EntityType.Role, args, flags);
-      if (role) return this.parseFilter(role, flags) || null;;
+      if (role) return this.validateEntity(role, flags) || null;;
     }
 
     if (this.isExpectedType(RoleExpectType.Name, flags)) {
       const role = this.getEntityByName(EntityType.Role, args, flags);
-      if (role) return this.parseFilter(role, flags) || null;;
+      if (role) return this.validateEntity(role, flags) || null;;
     }
 
     return null;
