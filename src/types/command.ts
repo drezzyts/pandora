@@ -4,7 +4,6 @@ import { CommandUtils } from "../structs/Utils";
 import { CommandArguments } from "../structs/Arguments";
 import { EntityType } from "./arguments";
 
-
 export interface CommandOption {
   name: string,
   type: EntityType

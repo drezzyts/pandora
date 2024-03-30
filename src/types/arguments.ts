@@ -50,9 +50,12 @@ export type GetValidEntityOptions<T extends EntityType, U> = {
 
 export type ExpectType = UserExpectType | ChannelExpectType | RoleExpectType;
 
+export type ArgumentValidator<T extends EntityType> = (val: GetDiscordEntity<T>) => boolean;
+
 export interface ArgumentFlags<T extends ExpectType, U, V extends EntityType> {
   expects: T[] | "*";
   position: number | "*";
+  validate?: ArgumentValidator<V>;
   option: GetValidEntityOptions<V, U> extends infer U
     ? U extends Array<unknown>
       ? U[number]

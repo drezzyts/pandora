@@ -28,7 +28,9 @@ export interface CommandArguments<Options extends CommandOption[]> {
   ): Role | null;
 }
 
-export class Arguments<Options extends CommandOption[]> implements CommandArguments<Options> {
+export class Arguments<Options extends CommandOption[]>
+  implements CommandArguments<Options>
+{
   public constructor(
     private context: CommandContext<Options>,
     private utils: CommandUtils<Options>,
@@ -41,6 +43,16 @@ export class Arguments<Options extends CommandOption[]> implements CommandArgume
       .slice(context.prefix.length + context.command.name.length)
       .trim()
       .split(/ +/g);
+  }
+
+  private parseFilter<T extends ExpectType, U extends EntityType>(
+    value: GetDiscordEntity<U>,
+    flags: ArgumentFlags<T, Options, U>
+  ): GetDiscordEntity<U> | null {
+    if (!flags.validate) return value;
+
+    const isValidValue = flags.validate(value);
+    return isValidValue ? value : null;
   }
 
   private isExpectedType<T extends ExpectType>(
@@ -67,17 +79,17 @@ export class Arguments<Options extends CommandOption[]> implements CommandArgume
 
     if (this.isExpectedType(UserExpectType.Mention, flags)) {
       const user = this.getEntityByMention(EntityType.User, flags);
-      if (user) return user;
+      if (user) return this.parseFilter(user, flags) || null;
     }
 
     if (this.isExpectedType(UserExpectType.Id, flags)) {
       const user = this.getEntityById(EntityType.User, args, flags);
-      if (user) return user;
+      if (user) return this.parseFilter(user, flags) || null;
     }
 
     if (this.isExpectedType(UserExpectType.Username, flags)) {
       const user = this.getEntityByName(EntityType.User, args, flags);
-      if (user) return user;
+      if (user) return this.parseFilter(user, flags) || null;
     }
 
     return null;
@@ -102,17 +114,17 @@ export class Arguments<Options extends CommandOption[]> implements CommandArgume
 
     if (this.isExpectedType(ChannelExpectType.Mention, flags)) {
       const channel = this.getEntityByMention(EntityType.Channel, flags);
-      if (channel) return channel;
+      if (channel) return this.parseFilter(channel, flags) || null;;
     }
 
     if (this.isExpectedType(ChannelExpectType.Id, flags)) {
       const channel = this.getEntityById(EntityType.Channel, args, flags);
-      if (channel) return channel;
+      if (channel) return this.parseFilter(channel, flags) || null;;
     }
 
     if (this.isExpectedType(ChannelExpectType.Name, flags)) {
       const channel = this.getEntityByName(EntityType.Channel, args, flags);
-      if (channel) return channel;
+      if (channel) return this.parseFilter(channel, flags) || null;;
     }
 
     return null;
@@ -137,17 +149,17 @@ export class Arguments<Options extends CommandOption[]> implements CommandArgume
 
     if (this.isExpectedType(RoleExpectType.Mention, flags)) {
       const role = this.getEntityByMention(EntityType.Role, flags);
-      if (role) return role;
+      if (role) return this.parseFilter(role, flags) || null;;
     }
 
     if (this.isExpectedType(RoleExpectType.Id, flags)) {
       const role = this.getEntityById(EntityType.Role, args, flags);
-      if (role) return role;
+      if (role) return this.parseFilter(role, flags) || null;;
     }
 
     if (this.isExpectedType(RoleExpectType.Name, flags)) {
       const role = this.getEntityByName(EntityType.Role, args, flags);
-      if (role) return role;
+      if (role) return this.parseFilter(role, flags) || null;;
     }
 
     return null;
