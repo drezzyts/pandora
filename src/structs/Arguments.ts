@@ -9,7 +9,7 @@ import {
   ChannelExpectType,
   EntityType,
   ExpectType,
-  GetDiscordEntity,
+  GetPrimitiveType,
   GetExpectedType,
   RoleExpectType,
   UserExpectType,
@@ -18,14 +18,23 @@ import { CommandUtils } from "./Utils";
 
 export interface CommandArguments<Options extends CommandOption[]> {
   getUser(
-    flags: ArgumentFlags<UserExpectType, Options, EntityType.User>
+    flags: ArgumentFlags<UserExpectType, Options, EntityType.User> & { expects: UserExpectType[] | "*" }
   ): User | null;
   getChannel(
-    flags: ArgumentFlags<ChannelExpectType, Options, EntityType.Channel>
+    flags: ArgumentFlags<ChannelExpectType, Options, EntityType.Channel> & { expects: ChannelExpectType[] | "*" }
   ): Channel | null;
   getRole(
-    flags: ArgumentFlags<RoleExpectType, Options, EntityType.Role>
+    flags: ArgumentFlags<RoleExpectType, Options, EntityType.Role> & { expects: RoleExpectType[] | "*" }
   ): Role | null;
+  getString(
+    flags: ArgumentFlags<undefined, Options, EntityType.String>
+  ): string | null;
+  getNumber(
+    flags: ArgumentFlags<undefined, Options, EntityType.Number>
+  ): number | null;
+  getBoolean(
+    flags: ArgumentFlags<undefined, Options, EntityType.Boolean>
+  ): boolean | null;
 }
 
 export class Arguments<Options extends CommandOption[]>
@@ -46,9 +55,9 @@ export class Arguments<Options extends CommandOption[]>
   }
 
   private validateEntity<T extends ExpectType, U extends EntityType>(
-    value: GetDiscordEntity<U>,
+    value: GetPrimitiveType<U>,
     flags: ArgumentFlags<T, Options, U>
-  ): GetDiscordEntity<U> | null {
+  ): GetPrimitiveType<U> | null {
     if (!flags.validate) return value;
 
     const isValidValue = flags.validate(value);
@@ -59,7 +68,8 @@ export class Arguments<Options extends CommandOption[]>
     type: T,
     flags: ArgumentFlags<T, Options, any>
   ) {
-    return flags.expects.includes(type);
+    if (type && 'expects' in flags) return flags.expects!.includes(type);
+    return false;
   }
 
   public getUser(
@@ -114,17 +124,17 @@ export class Arguments<Options extends CommandOption[]>
 
     if (this.isExpectedType(ChannelExpectType.Mention, flags)) {
       const channel = this.getEntityByMention(EntityType.Channel, flags);
-      if (channel) return this.validateEntity(channel, flags) || null;;
+      if (channel) return this.validateEntity(channel, flags) || null;
     }
 
     if (this.isExpectedType(ChannelExpectType.Id, flags)) {
       const channel = this.getEntityById(EntityType.Channel, args, flags);
-      if (channel) return this.validateEntity(channel, flags) || null;;
+      if (channel) return this.validateEntity(channel, flags) || null;
     }
 
     if (this.isExpectedType(ChannelExpectType.Name, flags)) {
       const channel = this.getEntityByName(EntityType.Channel, args, flags);
-      if (channel) return this.validateEntity(channel, flags) || null;;
+      if (channel) return this.validateEntity(channel, flags) || null;
     }
 
     return null;
@@ -149,20 +159,88 @@ export class Arguments<Options extends CommandOption[]>
 
     if (this.isExpectedType(RoleExpectType.Mention, flags)) {
       const role = this.getEntityByMention(EntityType.Role, flags);
-      if (role) return this.validateEntity(role, flags) || null;;
+      if (role) return this.validateEntity(role, flags) || null;
     }
 
     if (this.isExpectedType(RoleExpectType.Id, flags)) {
       const role = this.getEntityById(EntityType.Role, args, flags);
-      if (role) return this.validateEntity(role, flags) || null;;
+      if (role) return this.validateEntity(role, flags) || null;
     }
 
     if (this.isExpectedType(RoleExpectType.Name, flags)) {
       const role = this.getEntityByName(EntityType.Role, args, flags);
-      if (role) return this.validateEntity(role, flags) || null;;
+      if (role) return this.validateEntity(role, flags) || null;
     }
 
     return null;
+  }
+
+  public getString(
+    flags: ArgumentFlags<undefined, Options, EntityType.String>
+  ) : string | null {
+    return this.getLiteral(EntityType.String, flags);
+  }
+
+  public getNumber(
+    flags: ArgumentFlags<undefined, Options, EntityType.Number>
+  ) : number | null {
+    return this.getLiteral(EntityType.Number, flags);
+  }
+
+  public getBoolean(
+    flags: ArgumentFlags<undefined, Options, EntityType.Boolean>
+  ) : boolean | null {
+    return this.getLiteral(EntityType.Boolean, flags);
+  }
+
+  private getLiteral<T extends EntityType, U extends GetPrimitiveType<T>>(
+    entity: T,
+    flags: ArgumentFlags<undefined, Options, T>
+  ): U | null {
+    const literals = [EntityType.String, EntityType.Number, EntityType.Boolean];
+
+    if (!literals.includes(entity)) return null;
+
+    if (this.utils.isInteractionContext(this.context)) {
+      switch (entity) {
+        case EntityType.String:
+          return this.context.interaction.options.getString(
+            flags.option
+          ) as U | null;
+        case EntityType.Number:
+          return this.context.interaction.options.getNumber(
+            flags.option
+          ) as U | null;
+        case EntityType.Boolean:
+          return this.context.interaction.options.getBoolean(
+            flags.option
+          ) as U | null;
+      }
+      
+      return null;
+    }
+
+    const parser =
+      entity == EntityType.Number
+        ? Number
+        : entity == EntityType.Boolean
+        ? Boolean
+        : String;
+
+    const args = this.parseArguments(this.context);
+
+    if (typeof flags.position == 'number') {
+      const parsedEntity = parser(args[flags.position]);
+      if (flags.validate) return flags.validate(parsedEntity as U) ? parsedEntity as U : null;
+      return parsedEntity as U || null;
+    }
+
+    const validValue = args.find((arg) => parser(arg).toString() == arg);
+    if (!validValue) return null;
+
+    const value = parser(validValue);
+    if (flags.validate) return flags.validate(value as U) ? value as U : null;
+    return value as U;
   }
 
   private getEntityCachePropertyName(entity: EntityType) {
@@ -177,7 +255,7 @@ export class Arguments<Options extends CommandOption[]>
 
   private getEntityByMention<
     T extends EntityType,
-    U extends GetDiscordEntity<T>
+    U extends GetPrimitiveType<T>
   >(
     entity: T,
     flags: ArgumentFlags<GetExpectedType<T>, Options, T>
@@ -195,7 +273,7 @@ export class Arguments<Options extends CommandOption[]>
     return collection.first() as U;
   }
 
-  private getEntityByName<T extends EntityType, U extends GetDiscordEntity<T>>(
+  private getEntityByName<T extends EntityType, U extends GetPrimitiveType<T>>(
     entity: T,
     args: string[],
     flags: ArgumentFlags<GetExpectedType<T>, Options, T>
@@ -228,7 +306,7 @@ export class Arguments<Options extends CommandOption[]>
     ) as U;
   }
 
-  private getEntityById<T extends EntityType, U extends GetDiscordEntity<T>>(
+  private getEntityById<T extends EntityType, U extends GetPrimitiveType<T>>(
     entity: T,
     args: string[],
     flags: ArgumentFlags<GetExpectedType<T>, Options, T>

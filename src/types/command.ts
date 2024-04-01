@@ -36,4 +36,4 @@ export interface CommandExecutionData<T extends CommandOption[]> {
 
 export type CommandRunner<T extends CommandOption[]> = (
   data: CommandExecutionData<T>
-) => Promise<any> | any;
+) => unknown;

@@ -19,9 +19,12 @@ export enum RoleExpectType {
 }
 
 export enum EntityType {
-  User,
-  Channel,
-  Role,
+  User = 'User',
+  Channel = 'Channel',
+  Role = 'Role',
+  String = 'String',
+  Number = 'Number',
+  Boolean = 'Boolean'
 }
 
 export type GetExpectedType<T extends EntityType> = T extends EntityType.User
@@ -30,14 +33,26 @@ export type GetExpectedType<T extends EntityType> = T extends EntityType.User
   ? ChannelExpectType
   : T extends EntityType.Role
   ? RoleExpectType
+  : T extends EntityType.String  
+  ? undefined 
+  : T extends EntityType.Boolean
+  ? undefined
+  : T extends EntityType.Number
+  ? undefined
   : never;
 
-export type GetDiscordEntity<T extends EntityType> = T extends EntityType.User
+export type GetPrimitiveType<T extends EntityType> = T extends EntityType.User
   ? User
   : T extends EntityType.Channel
   ? Channel
   : T extends EntityType.Role
   ? Role
+  : T extends EntityType.String  
+  ? string 
+  : T extends EntityType.Boolean
+  ? boolean
+  : T extends EntityType.Number
+  ? number
   : never;
 
 export type GetValidEntityOptions<T extends EntityType, U> = {
@@ -48,12 +63,12 @@ export type GetValidEntityOptions<T extends EntityType, U> = {
     : never;
 };
 
-export type ExpectType = UserExpectType | ChannelExpectType | RoleExpectType;
+export type ExpectType = UserExpectType | ChannelExpectType | RoleExpectType | undefined;
 
-export type ArgumentValidator<T extends EntityType> = (val: GetDiscordEntity<T>) => boolean;
+export type ArgumentValidator<T extends EntityType> = (val: GetPrimitiveType<T>) => boolean;
 
 export interface ArgumentFlags<T extends ExpectType, U, V extends EntityType> {
-  expects: T[] | "*";
+  expects?: T[] | "*";
   position: number | "*";
   validate?: ArgumentValidator<V>;
   option: GetValidEntityOptions<V, U> extends infer U
