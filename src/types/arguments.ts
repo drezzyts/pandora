@@ -1,6 +1,12 @@
-import { User, Channel, Role } from "discord.js";
+import { User, Channel, Role, GuildMember } from "discord.js";
 
 export enum UserExpectType {
+  Username = "Username",
+  Mention = "Mention",
+  Id = "Id",
+}
+
+export enum MemberExpectType {
   Username = "Username",
   Mention = "Mention",
   Id = "Id",
@@ -20,6 +26,7 @@ export enum RoleExpectType {
 
 export enum EntityType {
   User = 'User',
+  Member = 'Member',
   Channel = 'Channel',
   Role = 'Role',
   String = 'String',
@@ -27,33 +34,28 @@ export enum EntityType {
   Boolean = 'Boolean'
 }
 
-export type GetExpectedType<T extends EntityType> = T extends EntityType.User
-  ? UserExpectType
-  : T extends EntityType.Channel
-  ? ChannelExpectType
-  : T extends EntityType.Role
-  ? RoleExpectType
-  : T extends EntityType.String  
-  ? undefined 
-  : T extends EntityType.Boolean
-  ? undefined
-  : T extends EntityType.Number
-  ? undefined
-  : never;
+export interface MappedExpectedType {
+  [EntityType.User]: UserExpectType;
+  [EntityType.Member]: MemberExpectType;
+  [EntityType.Channel]: ChannelExpectType;
+  [EntityType.Role]: RoleExpectType;
+  [EntityType.String]: undefined;
+  [EntityType.Number]: undefined;
+  [EntityType.Boolean]: undefined;
+}
 
-export type GetPrimitiveType<T extends EntityType> = T extends EntityType.User
-  ? User
-  : T extends EntityType.Channel
-  ? Channel
-  : T extends EntityType.Role
-  ? Role
-  : T extends EntityType.String  
-  ? string 
-  : T extends EntityType.Boolean
-  ? boolean
-  : T extends EntityType.Number
-  ? number
-  : never;
+export interface MappedPrimitiveType {
+  [EntityType.User]: User;
+  [EntityType.Member]: GuildMember;
+  [EntityType.Channel]: Channel;
+  [EntityType.Role]: Role;
+  [EntityType.String]: string;
+  [EntityType.Number]: number;
+  [EntityType.Boolean]: boolean;
+}
+
+export type GetExpectedType<T extends EntityType> = MappedExpectedType[T];
+export type GetPrimitiveType<T extends EntityType> =  MappedPrimitiveType[T];
 
 export type GetValidEntityOptions<T extends EntityType, U> = {
   [K in keyof U]: U[K] extends { name: string; type: infer V }
@@ -63,7 +65,7 @@ export type GetValidEntityOptions<T extends EntityType, U> = {
     : never;
 };
 
-export type ExpectType = UserExpectType | ChannelExpectType | RoleExpectType | undefined;
+export type ExpectType = UserExpectType | ChannelExpectType | RoleExpectType | MemberExpectType | undefined;
 
 export type ArgumentValidator<T extends EntityType> = (val: GetPrimitiveType<T>) => boolean;
 

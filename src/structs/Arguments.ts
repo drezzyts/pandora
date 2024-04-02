@@ -1,4 +1,4 @@
-import { Channel, Client, Role, User } from "discord.js";
+import { Channel, Client, GuildMember, Role, User } from "discord.js";
 import {
   CommandContext,
   CommandOption,
@@ -13,18 +13,30 @@ import {
   GetExpectedType,
   RoleExpectType,
   UserExpectType,
+  MemberExpectType,
 } from "../types/arguments";
 import { CommandUtils } from "./Utils";
 
 export interface CommandArguments<Options extends CommandOption[]> {
   getUser(
-    flags: ArgumentFlags<UserExpectType, Options, EntityType.User> & { expects: UserExpectType[] | "*" }
+    flags: ArgumentFlags<UserExpectType, Options, EntityType.User> & {
+      expects: UserExpectType[] | "*";
+    }
   ): User | null;
+  getMember(
+    flags: ArgumentFlags<MemberExpectType, Options, EntityType.Member> & {
+      expects: MemberExpectType[] | "*";
+    }
+  ): GuildMember | null;
   getChannel(
-    flags: ArgumentFlags<ChannelExpectType, Options, EntityType.Channel> & { expects: ChannelExpectType[] | "*" }
+    flags: ArgumentFlags<ChannelExpectType, Options, EntityType.Channel> & {
+      expects: ChannelExpectType[] | "*";
+    }
   ): Channel | null;
   getRole(
-    flags: ArgumentFlags<RoleExpectType, Options, EntityType.Role> & { expects: RoleExpectType[] | "*" }
+    flags: ArgumentFlags<RoleExpectType, Options, EntityType.Role> & {
+      expects: RoleExpectType[] | "*";
+    }
   ): Role | null;
   getString(
     flags: ArgumentFlags<undefined, Options, EntityType.String>
@@ -68,8 +80,41 @@ export class Arguments<Options extends CommandOption[]>
     type: T,
     flags: ArgumentFlags<T, Options, any>
   ) {
-    if (type && 'expects' in flags) return flags.expects!.includes(type);
+    if (type && "expects" in flags) return flags.expects!.includes(type);
     return false;
+  }
+
+  public getMember(
+    flags: ArgumentFlags<MemberExpectType, Options, EntityType.Member>
+  ): GuildMember | null {
+    if (this.utils.isInteractionContext(this.context))
+      return this.context.interaction.options.getMember(flags.option as string) as GuildMember;
+
+    if (flags.expects == "*")
+      flags.expects = [
+        MemberExpectType.Id,
+        MemberExpectType.Mention,
+        MemberExpectType.Username,
+      ];
+
+    const args = this.parseArguments(this.context);
+
+    if (this.isExpectedType(MemberExpectType.Mention, flags)) {
+      const member = this.getEntityByMention(EntityType.Member, flags);
+      if (member) return this.validateEntity(member, flags) || null;
+    }
+
+    if (this.isExpectedType(MemberExpectType.Id, flags)) {
+      const member = this.getEntityById(EntityType.Member, args, flags);
+      if (member) return this.validateEntity(member, flags) || null;
+    }
+
+    if (this.isExpectedType(MemberExpectType.Username, flags)) {
+      const member = this.getEntityByName(EntityType.Member, args, flags);
+      if (member) return this.validateEntity(member, flags) || null;
+    }
+
+    return null;
   }
 
   public getUser(
@@ -177,19 +222,19 @@ export class Arguments<Options extends CommandOption[]>
 
   public getString(
     flags: ArgumentFlags<undefined, Options, EntityType.String>
-  ) : string | null {
+  ): string | null {
     return this.getLiteral(EntityType.String, flags);
   }
 
   public getNumber(
     flags: ArgumentFlags<undefined, Options, EntityType.Number>
-  ) : number | null {
+  ): number | null {
     return this.getLiteral(EntityType.Number, flags);
   }
 
   public getBoolean(
     flags: ArgumentFlags<undefined, Options, EntityType.Boolean>
-  ) : boolean | null {
+  ): boolean | null {
     return this.getLiteral(EntityType.Boolean, flags);
   }
 
@@ -216,7 +261,7 @@ export class Arguments<Options extends CommandOption[]>
             flags.option
           ) as U | null;
       }
-      
+
       return null;
     }
 
@@ -229,17 +274,18 @@ export class Arguments<Options extends CommandOption[]>
 
     const args = this.parseArguments(this.context);
 
-    if (typeof flags.position == 'number') {
+    if (typeof flags.position == "number") {
       const parsedEntity = parser(args[flags.position]);
-      if (flags.validate) return flags.validate(parsedEntity as U) ? parsedEntity as U : null;
-      return parsedEntity as U || null;
+      if (flags.validate)
+        return flags.validate(parsedEntity as U) ? (parsedEntity as U) : null;
+      return (parsedEntity as U) || null;
     }
 
     const validValue = args.find((arg) => parser(arg).toString() == arg);
     if (!validValue) return null;
 
     const value = parser(validValue);
-    if (flags.validate) return flags.validate(value as U) ? value as U : null;
+    if (flags.validate) return flags.validate(value as U) ? (value as U) : null;
     return value as U;
   }
 

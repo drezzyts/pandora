@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, Message } from "discord.js";
-import { Command } from "../structs/Command";
+import { HybridCommand } from "../structs/Command";
 import { CommandUtils } from "../structs/Utils";
 import { CommandArguments } from "../structs/Arguments";
 import { EntityType } from "./arguments";
@@ -17,13 +17,13 @@ export interface CommandConfig<T extends CommandOption[]> {
 
 export interface InteractionCommandContext<T extends CommandOption[]> {
   interaction: ChatInputCommandInteraction;
-  command: Command<T>;
+  command: HybridCommand<T>;
 }
 
 export interface PrefixedCommandContext<T extends CommandOption[]> {
   message: Message<true>;
   prefix: string;
-  command: Command<T>;
+  command: HybridCommand<T>;
 }
 
 export type CommandContext<T extends CommandOption[]> = InteractionCommandContext<T> | PrefixedCommandContext<T>;

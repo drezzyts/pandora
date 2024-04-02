@@ -9,9 +9,9 @@ import {
 import { Arguments } from "./Arguments";
 import { Utils } from "./Utils";
 
-export class Command<T extends CommandOption[]> implements CommandConfig<T> {
+export class HybridCommand<T extends CommandOption[]> implements CommandConfig<T> {
   declare name: string;
-  declare runner: CommandRunner<Command<T>["options"]>;
+  declare runner: CommandRunner<HybridCommand<T>["options"]>;
   declare options: T;
 
   public constructor(config: CommandConfig<T>) {
