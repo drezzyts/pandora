@@ -71,9 +71,10 @@ export class Arguments<Options extends CommandOption[]>
     flags: ArgumentFlags<T, Options, U>
   ): GetPrimitiveType<U> | null {
     if (!flags.validate) return value;
+    if (!value) return null;
 
     const isValidValue = flags.validate(value);
-    return isValidValue ? value : null;
+    return !!isValidValue ? value : null;
   }
 
   private isExpectedType<T extends ExpectType>(
@@ -87,9 +88,11 @@ export class Arguments<Options extends CommandOption[]>
   public getMember(
     flags: ArgumentFlags<MemberExpectType, Options, EntityType.Member>
   ): GuildMember | null {
-    if (this.utils.isInteractionContext(this.context))
-      return this.context.interaction.options.getMember(flags.option as string) as GuildMember;
-
+    if (this.utils.isInteractionContext(this.context)) {
+      const member = this.context.interaction.options.getMember(flags.option as string) as GuildMember;
+      return this.validateEntity(member, flags) || null;
+    }
+      
     if (flags.expects == "*")
       flags.expects = [
         MemberExpectType.Id,
@@ -120,9 +123,11 @@ export class Arguments<Options extends CommandOption[]>
   public getUser(
     flags: ArgumentFlags<UserExpectType, Options, EntityType.User>
   ): User | null {
-    if (this.utils.isInteractionContext(this.context))
-      return this.context.interaction.options.getUser(flags.option as string);
-
+    if (this.utils.isInteractionContext(this.context)) {
+      const user = this.context.interaction.options.getUser(flags.option as string) as User;
+      return this.validateEntity(user, flags) || null;
+    }
+      
     if (flags.expects == "*")
       flags.expects = [
         UserExpectType.Id,
@@ -153,10 +158,12 @@ export class Arguments<Options extends CommandOption[]>
   public getChannel(
     flags: ArgumentFlags<ChannelExpectType, Options, EntityType.Channel>
   ): Channel | null {
-    if (this.utils.isInteractionContext(this.context))
-      return this.context.interaction.options.getChannel(
+    if (this.utils.isInteractionContext(this.context)) {
+      const channel = this.context.interaction.options.getChannel(
         flags.option as string
       ) as Channel;
+      return this.validateEntity(channel, flags) || null;
+    }
 
     if (flags.expects == "*")
       flags.expects = [
@@ -188,10 +195,13 @@ export class Arguments<Options extends CommandOption[]>
   public getRole(
     flags: ArgumentFlags<RoleExpectType, Options, EntityType.Role>
   ): Role | null {
-    if (this.utils.isInteractionContext(this.context))
-      return this.context.interaction.options.getRole(
+    if (this.utils.isInteractionContext(this.context)) {
+      const role = this.context.interaction.options.getRole(
         flags.option as string
       ) as Role;
+      return this.validateEntity(role, flags) || null;
+    }
+      
 
     if (flags.expects == "*")
       flags.expects = [
@@ -223,19 +233,22 @@ export class Arguments<Options extends CommandOption[]>
   public getString(
     flags: ArgumentFlags<undefined, Options, EntityType.String>
   ): string | null {
-    return this.getLiteral(EntityType.String, flags);
+    const string = this.getLiteral(EntityType.String, flags) as string;
+    return this.validateEntity(string, flags) || null;
   }
 
   public getNumber(
     flags: ArgumentFlags<undefined, Options, EntityType.Number>
   ): number | null {
-    return this.getLiteral(EntityType.Number, flags);
+    const number = this.getLiteral(EntityType.Number, flags) as number;
+    return this.validateEntity(number, flags) || null;
   }
 
   public getBoolean(
     flags: ArgumentFlags<undefined, Options, EntityType.Boolean>
   ): boolean | null {
-    return this.getLiteral(EntityType.Boolean, flags);
+    const boolean = this.getLiteral(EntityType.Boolean, flags) as boolean;
+    return this.validateEntity(boolean, flags) || null;
   }
 
   private getLiteral<T extends EntityType, U extends GetPrimitiveType<T>>(
