@@ -6,11 +6,14 @@ import { EntityType } from "./arguments";
 
 export interface CommandOption {
   name: string,
-  type: EntityType
+  description: string,
+  type: EntityType,
+  autocomplete?: boolean
 }
 
-export interface CommandConfig<T extends CommandOption[]> {
+export interface CommandConfig<T extends CommandOption[] = []> {
   name: string;
+  description?: string;
   runner: CommandRunner<CommandConfig<T>["options"]>;
   options: T;
 }
