@@ -14,6 +14,7 @@ export interface CommandOption {
 export interface CommandConfig<T extends CommandOption[] = []> {
   name: string;
   description?: string;
+  aliases?: string[];
   runner: CommandRunner<CommandConfig<T>["options"]>;
   options: T;
 }

@@ -5,7 +5,7 @@ export interface CommandUtils<T extends CommandOption[]> {
   isInteractionContext(context: CommandContext<T>): context is InteractionCommandContext<T>;
   isPrefixedContext(context: CommandContext<T>): context is PrefixedCommandContext<T>;
   reply(content: string): Promise<InteractionResponse<boolean>> | Promise<Message<boolean>>;
-  author(): User;
+  get author(): User;
 }
 
 export class Utils<T extends CommandOption[]> implements CommandUtils<T> {
@@ -25,7 +25,7 @@ export class Utils<T extends CommandOption[]> implements CommandUtils<T> {
     return this.context.message.reply(content);
   }
 
-  public author(): User {
+  public get author(): User {
     if (this.isInteractionContext(this.context))
       return this.context.interaction.user;
     return this.context.message.author;

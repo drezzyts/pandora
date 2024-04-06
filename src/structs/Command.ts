@@ -1,10 +1,9 @@
 import {
-  ApplicationCommand,
+  ApplicationCommandDataResolvable,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   ChatInputCommandInteraction,
   Client,
-  CommandInteraction,
   CommandInteractionOption,
   Message,
 } from "discord.js";
@@ -26,26 +25,26 @@ export class HybridCommand<T extends CommandOption[]>
   declare options: T;
 
   public description?: string | undefined;
+  public aliases?: string[] | undefined;
 
   public constructor(config: CommandConfig<T>) {
     Object.assign(this, config);
   }
 
   private normalizeOptions(): CommandInteractionOption[] {
-    const normalizedOptions: CommandInteractionOption[] = new Array(
-      this.options.length
-    );
+    const normalizedOptions: CommandInteractionOption[] = this.options.map(
+      (option) => {
+        const normalizedOptionType =
+          ApplicationCommandOptionType[
+            option.type as unknown as ApplicationCommandOptionType
+          ];
 
-    this.options.forEach((option, i) => {
-      const normalizedOptionType =
-        ApplicationCommandOptionType[
-          option.type as unknown as ApplicationCommandOptionType
-        ];
-      normalizedOptions[i] = {
-        ...option,
-        type: normalizedOptionType as unknown as ApplicationCommandOptionType,
-      };
-    });
+        return {
+          ...option,
+          type: normalizedOptionType as unknown as ApplicationCommandOptionType,
+        };
+      }
+    );
 
     return normalizedOptions;
   }
@@ -53,8 +52,13 @@ export class HybridCommand<T extends CommandOption[]>
   public toJSON() {
     const { name, description } = this;
     const options = this.normalizeOptions();
-    
-    return { name, description, options, type: ApplicationCommandType.ChatInput };
+
+    return {
+      name,
+      description,
+      options,
+      type: ApplicationCommandType.ChatInput,
+    } as ApplicationCommandDataResolvable;
   }
 
   public executeSlashCommand(
