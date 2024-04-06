@@ -2,10 +2,10 @@
 
 Pandora empowers you to create hybrid commands that seamlessly function as both slash commands and prefixed commands within your Discord bot, leveraging the power of discord.js.
 
-## 🚀 Installation
+## [🚀 Installation](https://npmjs.com/pandora.ts)
 
 ```bash
-npm install pandora
+npm install pandora.ts
 ```
 
 ## 🗺️ Summary
