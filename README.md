@@ -210,7 +210,7 @@ Pandora's hybrid commands use a structure that requires normalization for Discor
 * Simple example:
 
 ```ts
-import { HybridCommand } from 'pandora';
+import { HybridCommand } from 'pandora.ts';
 
 export default new HybridCommand({
   name: 'ping',
@@ -224,7 +224,7 @@ export default new HybridCommand({
 * Example with options:
 
 ```ts
-import { HybridCommand, EntityType, UserExpectType } from 'pandora';
+import { HybridCommand, EntityType, UserExpectType } from 'pandora.ts';
 
 export default new HybridCommand({
   name: 'avatar',
@@ -253,7 +253,7 @@ export default new HybridCommand({
 * Example with command context exceptions:
 
 ```ts
-import { HybridCommand } from 'pandora';
+import { HybridCommand } from 'pandora.ts';
 
 export default new HybridCommand({
   name: 'ping',
